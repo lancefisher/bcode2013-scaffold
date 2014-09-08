@@ -6,8 +6,8 @@ public class RobotPlayer {
 	
 	// Parameters
 	private static int enemySenseDistance = 100;
-	private static int attackInterval = 300;
-	private static int[] attackGroups = {0, 2};
+	private static int attackInterval = 200;
+	private static int[] attackGroups = {0, 2, 4};
 	private static int groupDistance = 5;
 
 	// Globals
@@ -77,16 +77,28 @@ public class RobotPlayer {
 			if (nearestEnemyLocation != null) {
 				goToLocation(nearestEnemyLocation);
 			} else {
-				layMine();
+				if (!shouldAttack) {
+					layMine();
+				}
 				goToLocation(robotRallyPoint);
 			}
 		}
 	}
 	
 	private static void runHQ() throws GameActionException {
-        if (robot.isActive() && robot.canMove(enemyHQDirection)) {
-                robot.spawn(enemyHQDirection);
-        }
+		if (robot.isActive()) {
+			MapLocation hqLoc = robot.getLocation();
+			Team currentTeam = robot.getTeam();
+			Direction[] directions = {enemyHQDirection.rotateLeft(), enemyHQDirection.rotateRight(), enemyHQDirection};
+			Team mineTeam;
+			for (Direction d:directions) {
+				mineTeam = robot.senseMine(hqLoc.add(d));
+				if (mineTeam == null || mineTeam == currentTeam && robot.canMove(d)) {
+					robot.spawn(d);
+					return;
+				}
+			}
+		}
 	}
 	
 	// Helper methods
@@ -126,15 +138,17 @@ public class RobotPlayer {
 			Team mineTeam = robot.senseMine(nextLocation);
 			if (mineTeam != null && mineTeam != robot.getTeam()) {
 				robot.defuseMine(nextLocation);
+				return; // Return after defusing since we can only do one thing at a time
 			}
-			robot.move(lookingAtCurrently);
+			if (robot.canMove(lookingAtCurrently)) {
+				robot.move(lookingAtCurrently);
+			}
 		}
 	}
 	
 	private static void layMine() throws GameActionException {
-		// Look for friendly mines!
 		Team mineTeam = robot.senseMine(robot.getLocation());
-		if (mineTeam == null) {
+		if (mineTeam == null && robot.isActive()) {
 			robot.layMine();
 		}
 	}
