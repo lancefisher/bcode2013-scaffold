@@ -1,6 +1,7 @@
 package team002;
 
 import battlecode.common.Direction;
+import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
 import battlecode.common.MapLocation;
@@ -12,8 +13,12 @@ import battlecode.common.MapLocation;
  * The HQ will spawn soldiers continuously.
  */
 public class RobotPlayer {
+	
+	//private static int teamNumber = 0;
+	
 	public static void run(RobotController rc) {
 		while (true) {
+			//teamNumber = rc.getRobot().getID() % 2;
 			try {
 				if (rc.getType() == RobotType.HQ) {
 					if (rc.isActive()) {
@@ -30,22 +35,23 @@ public class RobotPlayer {
 					MapLocation dest = me.add(direction);
 
 					if (rc.isActive() && rc.senseMine(dest) != null) {
-						Direction altDir = alternateDirection(me, them, direction);
-						MapLocation altLoc = me.add(altDir);
-						
-						if (rc.isActive() && rc.senseMine(altLoc) != null) {							
-							rc.defuseMine(altLoc);
-							rc.yield();
-						} else {
-							if (rc.isActive()) {
-								rc.move(altDir);
+						Direction altDir1 = direction.rotateLeft();
+						MapLocation altLoc1 = me.add(altDir1);						
+						if (rc.isActive() && rc.senseMine(altLoc1) != null) {							
+							Direction altDir2 = direction.rotateRight();
+							MapLocation altLoc2 = me.add(altDir2);
+							if (rc.isActive() && rc.senseMine(altLoc2) != null) {
+								rc.defuseMine(altLoc2);
 								rc.yield();
+							} else {
+								moveIfPossible(rc, altDir2);
 							}
+						} else {							
+							moveIfPossible(rc, altDir1);
 						}						
-					} else if (rc.isActive() && rc.canMove(direction)) {
-						rc.move(direction);
+					} else
+						moveIfPossible(rc, direction);
 					}
-				}
 
 				// End turn
 				rc.yield();
@@ -55,12 +61,12 @@ public class RobotPlayer {
 		}
 	}
 
-	private static Direction alternateDirection(MapLocation me, MapLocation them, Direction direction) {
-		Direction dir = Direction.values()[(direction.ordinal() + 1 + 8) % 8];
-		
-		return dir;
+	private static void moveIfPossible(RobotController rc, Direction altDir)
+			throws GameActionException {
+		if (rc.isActive() && rc.canMove(altDir)) {
+			rc.move(altDir);
+			rc.yield();
+		}
 	}
-
-
 
 }
