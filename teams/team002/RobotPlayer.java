@@ -49,7 +49,16 @@ public class RobotPlayer {
 							dest = new MapLocation(me.x - 1, me.y);
 							direction = Direction.WEST;
 						}
-					} else {
+					} else { // me.x == them.x
+						if (me.y < them.y) {
+							dest = new MapLocation(me.x, me.y + 1);
+							direction = Direction.SOUTH;
+						} else if (me.y > them.y) {
+							dest = new MapLocation(me.x, me.y - 1);
+							direction = Direction.NORTH;
+						} else {
+							//do nothing
+						}						
 					}
 
 					if (rc.isActive() && rc.senseMine(dest) != null) {
