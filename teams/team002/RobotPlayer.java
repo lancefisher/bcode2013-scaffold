@@ -22,44 +22,10 @@ public class RobotPlayer {
 					}
 				} else if (rc.getType() == RobotType.SOLDIER) {
 					MapLocation me = rc.getLocation();
-
 					MapLocation them = rc.senseEnemyHQLocation();
 
-					Direction direction = Direction.OMNI;
-					MapLocation dest = new MapLocation(me.x, me.y);
-					if (me.x < them.x) {
-						if (me.y < them.y) {
-							dest = new MapLocation(me.x + 1, me.y + 1);
-							direction = Direction.SOUTH_EAST;
-						} else if (me.y > them.y) {
-							dest = new MapLocation(me.x + 1, me.y - 1);
-							direction = Direction.NORTH_EAST;
-						} else {
-							dest = new MapLocation(me.x + 1, me.y);
-							direction = Direction.EAST;
-						}
-					} else if (me.x > them.x) {
-						if (me.y < them.y) {
-							dest = new MapLocation(me.x - 1, me.y + 1);
-							direction = Direction.SOUTH_WEST;
-						} else if (me.y > them.y) {
-							dest = new MapLocation(me.x - 1, me.y - 1);
-							direction = Direction.NORTH_WEST;
-						} else {
-							dest = new MapLocation(me.x - 1, me.y);
-							direction = Direction.WEST;
-						}
-					} else { // me.x == them.x
-						if (me.y < them.y) {
-							dest = new MapLocation(me.x, me.y + 1);
-							direction = Direction.SOUTH;
-						} else if (me.y > them.y) {
-							dest = new MapLocation(me.x, me.y - 1);
-							direction = Direction.NORTH;
-						} else {
-							//do nothing
-						}						
-					}
+					Direction direction = directionToThem(me, them);
+					MapLocation dest = mapLocationFromDirection(me, direction);
 
 					if (rc.isActive() && rc.senseMine(dest) != null) {
 						if (rc.isActive()) {
@@ -79,5 +45,69 @@ public class RobotPlayer {
 				e.printStackTrace();
 			}
 		}
+	}
+
+	private static MapLocation mapLocationFromDirection(MapLocation me, Direction direction) {
+		int x = me.x;
+		int y = me.y;
+
+		switch (direction) {
+		case NORTH:
+			y -= 1;
+			break;
+		case NORTH_EAST:
+			x += 1;
+			y -= 1;
+		case NORTH_WEST:
+			x -= 1;
+			y -= 1;
+		case SOUTH:
+			y += 1;
+		case SOUTH_EAST:
+			x += 1;
+			y += 1;
+		case SOUTH_WEST:
+			x += 1;
+			y += 1;
+		case WEST:
+			x -= 1;
+		case EAST:
+			x += 1;		
+		default:
+			break;
+		}
+		
+		return new MapLocation(x, y);
+	}
+
+	private static Direction directionToThem(MapLocation me, MapLocation them) {
+		Direction direction;
+		
+		if (me.x < them.x) {
+			if (me.y < them.y) {
+				direction = Direction.SOUTH_EAST;
+			} else if (me.y > them.y) {
+				direction = Direction.NORTH_EAST;
+			} else {
+				direction = Direction.EAST;
+			}
+		} else if (me.x > them.x) {
+			if (me.y < them.y) {
+				direction = Direction.SOUTH_WEST;
+			} else if (me.y > them.y) {
+				direction = Direction.NORTH_WEST;
+			} else {
+				direction = Direction.WEST;
+			}
+		} else { // me.x == them.x
+			if (me.y < them.y) {
+				direction = Direction.SOUTH;
+			} else if (me.y > them.y) {
+				direction = Direction.NORTH;
+			} else {
+				direction = Direction.OMNI;
+			}						
+		}
+		return direction;
 	}
 }
