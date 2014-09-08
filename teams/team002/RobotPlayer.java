@@ -5,6 +5,8 @@ import battlecode.common.RobotController;
 import battlecode.common.RobotType;
 import battlecode.common.MapLocation;
 
+
+
 /** The example funcs player is a player meant to demonstrate basic usage of the most common commands.
  * Robots will move around randomly, occasionally mining and writing useless messages.
  * The HQ will spawn soldiers continuously.
@@ -24,17 +26,23 @@ public class RobotPlayer {
 					MapLocation me = rc.getLocation();
 					MapLocation them = rc.senseEnemyHQLocation();
 
-					Direction direction = directionToThem(me, them);
-					MapLocation dest = mapLocationFromDirection(me, direction);
+					Direction direction = me.directionTo(them);
+					MapLocation dest = me.add(direction);
 
 					if (rc.isActive() && rc.senseMine(dest) != null) {
-						if (rc.isActive()) {
-							rc.defuseMine(dest);
+						Direction altDir = alternateDirection(me, them, direction);
+						MapLocation altLoc = me.add(altDir);
+						
+						if (rc.isActive() && rc.senseMine(altLoc) != null) {							
+							rc.defuseMine(altLoc);
 							rc.yield();
-						}
-					}
-
-					if (rc.isActive() && rc.canMove(direction)) {
+						} else {
+							if (rc.isActive()) {
+								rc.move(altDir);
+								rc.yield();
+							}
+						}						
+					} else if (rc.isActive() && rc.canMove(direction)) {
 						rc.move(direction);
 					}
 				}
@@ -47,74 +55,12 @@ public class RobotPlayer {
 		}
 	}
 
-	private static MapLocation mapLocationFromDirection(MapLocation me, Direction direction) {
-		int x = me.x;
-		int y = me.y;
-
-		switch (direction) {
-		case NORTH:
-			y -= 1;
-			break;
-		case NORTH_EAST:
-			x += 1;
-			y -= 1;
-			break;
-		case NORTH_WEST:
-			x -= 1;
-			y -= 1;
-			break;
-		case SOUTH:
-			y += 1;
-			break;
-		case SOUTH_EAST:
-			x += 1;
-			y += 1;
-			break;
-		case SOUTH_WEST:
-			x += 1;
-			y += 1;
-			break;
-		case WEST:
-			x -= 1;
-			break;
-		case EAST:
-			x += 1;
-			break;
-		default:
-			break;
-		}
+	private static Direction alternateDirection(MapLocation me, MapLocation them, Direction direction) {
+		Direction dir = Direction.values()[(direction.ordinal() + 1 + 8) % 8];
 		
-		return new MapLocation(x, y);
+		return dir;
 	}
 
-	private static Direction directionToThem(MapLocation me, MapLocation them) {
-		Direction direction;
-		
-		if (me.x < them.x) {
-			if (me.y < them.y) {
-				direction = Direction.SOUTH_EAST;
-			} else if (me.y > them.y) {
-				direction = Direction.NORTH_EAST;
-			} else {
-				direction = Direction.EAST;
-			}
-		} else if (me.x > them.x) {
-			if (me.y < them.y) {
-				direction = Direction.SOUTH_WEST;
-			} else if (me.y > them.y) {
-				direction = Direction.NORTH_WEST;
-			} else {
-				direction = Direction.WEST;
-			}
-		} else { // me.x == them.x
-			if (me.y < them.y) {
-				direction = Direction.SOUTH;
-			} else if (me.y > them.y) {
-				direction = Direction.NORTH;
-			} else {
-				direction = Direction.OMNI;
-			}						
-		}
-		return direction;
-	}
+
+
 }
