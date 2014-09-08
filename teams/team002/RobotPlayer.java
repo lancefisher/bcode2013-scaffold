@@ -58,21 +58,28 @@ public class RobotPlayer {
 		case NORTH_EAST:
 			x += 1;
 			y -= 1;
+			break;
 		case NORTH_WEST:
 			x -= 1;
 			y -= 1;
+			break;
 		case SOUTH:
 			y += 1;
+			break;
 		case SOUTH_EAST:
 			x += 1;
 			y += 1;
+			break;
 		case SOUTH_WEST:
 			x += 1;
 			y += 1;
+			break;
 		case WEST:
 			x -= 1;
+			break;
 		case EAST:
-			x += 1;		
+			x += 1;
+			break;
 		default:
 			break;
 		}
